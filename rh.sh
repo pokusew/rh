@@ -25,7 +25,7 @@ __rh_get_ros1_versions() {
 		return 1
 	fi
 
-	find "$RH_ROS_1_INSTALL_DIR" -type d -d 1 -print0 | xargs -0 basename -a
+	find "$RH_ROS_1_INSTALL_DIR" -mindepth 1 -maxdepth 1 -type d -print0 | xargs -0 basename -a
 	return 0
 
 }
@@ -59,7 +59,7 @@ __rh_get_project_names() {
 		return 1
 	fi
 
-	find "${projects_dirs[@]}" -type d -d 1 -print0 | xargs -0 basename -a | sort | uniq
+	find "${projects_dirs[@]}" -mindepth 1 -maxdepth 1 -type d -print0 | xargs -0 basename -a | sort | uniq
 	return 0
 
 }
@@ -217,7 +217,8 @@ rh() {
 		# see https://github.com/koalaman/shellcheck/wiki/SC2206
 		IFS=":" read -r -a projects_dirs <<<"$RH_PROJECTS_DIRS"
 		for p_dir in "${projects_dirs[@]}"; do
-			((i++))
+			# ((i++)) # Bash 5+
+			i+=1
 			echo "  $i. $p_dir"
 		done
 
@@ -377,7 +378,15 @@ __rh_complete() {
 	local partials
 	IFS=" " read -r -a partials <<<"${COMP_LINE:0:$COMP_POINT}"
 	local partial="${partials[$COMP_CWORD]}"
-	local is_last_word=$((${#COMP_WORDS[@]} == "$COMP_CWORD" + 1))
+	# local is_last_word=$((${#COMP_WORDS[@]} == "$COMP_CWORD" + 1)) # Bash 5+
+	# START Bash 4+
+	local -i max_index="${#COMP_WORDS[@]}"
+	max_index+=-1
+	local is_last_word=0
+	if [[ $max_index -eq $COMP_CWORD ]]; then
+		is_last_word=1
+	fi
+	# END Bash 4+
 
 	if [[ -n $RH_DEBUG ]]; then
 		{

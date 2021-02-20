@@ -238,6 +238,7 @@ rh() {
 			# for ROS 1 with catkin: try to source devel setup.bash
 			if [[ -r .catkin_workspace && -r devel/setup.bash ]]; then
 				echo "sourcing devel/setup.bash"
+				source devel/setup.bash
 				echo "current ROS related env variables:"
 				__rh_env
 			fi

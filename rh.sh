@@ -378,15 +378,13 @@ __rh_complete() {
 	local partials
 	IFS=" " read -r -a partials <<<"${COMP_LINE:0:$COMP_POINT}"
 	local partial="${partials[$COMP_CWORD]}"
-	# local is_last_word=$((${#COMP_WORDS[@]} == "$COMP_CWORD" + 1)) # Bash 5+
-	# START Bash 4+
-	local -i max_index="${#COMP_WORDS[@]}"
-	max_index+=-1
+	local -i last_index=${#COMP_WORDS[@]}-1
 	local is_last_word=0
-	if [[ $max_index -eq $COMP_CWORD ]]; then
+	# COMP_CWORD index is pointing to the last word (last_index == COMP_CWORD index)
+	# AND COMP_LINE does not end with a space (that would mean that this last word is actually not the last)
+	if [[ $last_index -eq $COMP_CWORD && "${COMP_LINE:(-1):1}" != " " ]]; then
 		is_last_word=1
 	fi
-	# END Bash 4+
 
 	if [[ -n $RH_DEBUG ]]; then
 		{

@@ -118,7 +118,7 @@ rh() {
 	}
 
 	__rh_env() {
-		env | grep -e RH -e ROS -e CMAKE -e PYTHON | sort
+		env | grep --color=always -e RH -e ROS -e CMAKE -e PYTHON | sort
 		return 0
 	}
 

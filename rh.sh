@@ -267,8 +267,10 @@ rh() {
 	}
 
 	__rh_cleanup() {
+
 		unset red
 		unset rst
+
 		unset __rh_print_help
 		unset __rh_env
 		unset __rh_versions
@@ -277,7 +279,9 @@ rh() {
 		unset __rh_cd
 		unset __rh_wcd
 		unset __rh_dev
-		unset __rh_unset_local_fn
+
+		unset __rh_cleanup
+
 	}
 
 	# local readonly associative array (dictionary)
@@ -296,7 +300,7 @@ rh() {
 
 	# TODO: in the future, handle options (prefixed by -) independently of their positions
 
-	if [[ -n ${sub_cmd_map[$1]} ]]; then
+	if [[ -n $1 && -n ${sub_cmd_map[$1]} ]]; then
 		# echo "handler of '$1' is '${sub_cmd_map[$1]}'"
 		# calls handler of the subcommand
 		${sub_cmd_map[$1]} "$@"

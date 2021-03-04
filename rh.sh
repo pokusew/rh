@@ -2,7 +2,7 @@
 
 # NOTE: Do NOT run this file directly (It is even not executable!)!
 
-# USAGE:
+# INSTALLATION:
 #
 #   add the following to your ~/.bashrc
 #
@@ -14,10 +14,10 @@
 #   export RH_ROS_INSTALL_DIRS="/opt/ros"
 #   source path/to/rh.sh
 
-export RH_VERSION="0.0.1"
+export RH_VERSION="0.0.2"
 
 # ROADMAP:
-# * support ROS 2 (workspace root detection)
+# * support ROS 2 in rh cd, rh wcd rh dev (workspace root detection)
 
 __rh_get_ros_versions() {
 
@@ -141,16 +141,40 @@ rh() {
 	# credits: https://stackoverflow.com/questions/5947742/how-to-change-the-output-color-of-echo-in-linux
 	# see also: https://unix.stackexchange.com/questions/269077/tput-setaf-color-table-how-to-determine-color-codes
 	__rh_red=$(tput setaf 1)
+	__rh_green=$(tput setaf 2)
+	__rh_yellow=$(tput setaf 11)
+	__rh_cyan=$(tput setaf 6)
+	__rh_gray=$(tput setaf 8)
+	__rh_bold=$(tput bold)
 	__rh_rst=$(tput sgr0)
 
 	__rh_print_help() {
+		echo "${__rh_bold}${__rh_cyan}rh - ROS helper${__rh_rst}"
 		echo "A simple helper to make working with different ROS versions and projects easier."
-		echo "Version: $RH_VERSION"
-		echo "Usage: rh <command> [command options]"
-		echo "Commands:"
-		echo "  ros cd <project>"
+		echo "${__rh_gray}Version: ${__rh_rst}$RH_VERSION"
+		echo "${__rh_gray}Usage: ${__rh_bold}${__rh_cyan}rh ${__rh_green}<command> ${__rh_yellow}[command options]${__rh_rst}"
+		echo "${__rh_gray}Commands:${__rh_rst}"
+		echo "  ${__rh_bold}${__rh_cyan}rh ${__rh_green}help${__rh_rst}"
+		echo "    prints this help"
+		echo "  ${__rh_bold}${__rh_cyan}rh ${__rh_green}env${__rh_rst}"
+		echo "    prints env variables related to ROS"
+		echo "  ${__rh_bold}${__rh_cyan}rh ${__rh_green}versions${__rh_rst}"
+		echo "    lists all available ROS 1 and ROS 2 versions"
+		echo "    versions are searched in dirs specified in RH_ROS_INSTALL_DIRS"
+		echo "  ${__rh_bold}${__rh_cyan}rh ${__rh_green}sw ${__rh_yellow}<ros version name>${__rh_rst}"
+		echo "    activates given ROS version"
+		echo "    versions are searched in dirs specified in RH_ROS_INSTALL_DIRS"
+		echo "  ${__rh_bold}${__rh_cyan}rh ${__rh_green}projects${__rh_rst}"
+		echo "    lists all available projects"
+		echo "    projects are searched in dirs specified in RH_PROJECTS_DIRS"
+		echo "  ${__rh_bold}${__rh_cyan}rh ${__rh_green}cd ${__rh_yellow}<project name>${__rh_rst}"
 		echo "    changes into workspace of the given project"
 		echo "    projects are searched in dirs specified in RH_PROJECTS_DIRS"
+		echo "  ${__rh_bold}${__rh_cyan}rh ${__rh_green}dev${__rh_rst}"
+		echo "    tries to source devel/setup.bash (relative to the current working dir)"
+		echo "  ${__rh_bold}${__rh_cyan}rh ${__rh_green}wcd${__rh_rst}"
+		echo "    recursively searches for catkin workspaces and changes to first found"
+		echo "    and sources its devel/setup.bash"
 	}
 
 	__rh_env() {
@@ -318,6 +342,11 @@ rh() {
 	__rh_cleanup() {
 
 		unset __rh_red
+		unset __rh_green
+		unset __rh_yellow
+		unset __rh_cyan
+		unset __rh_gray
+		unset __rh_bold
 		unset __rh_rst
 
 		unset __rh_print_help

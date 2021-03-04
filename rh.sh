@@ -23,7 +23,7 @@
 #            the left-most specified directory has the highest priority
 #
 
-export RH_VERSION="0.0.3"
+export RH_VERSION="0.0.4"
 
 # ROADMAP:
 # * support ROS 2 in rh cd, rh wcd rh dev (workspace root detection)
@@ -468,14 +468,13 @@ __rh_complete() {
 	}
 
 	# see https://github.com/koalaman/shellcheck/wiki/SC2206
+	local before_point="${COMP_LINE:0:$COMP_POINT}"
+	local after_point="${COMP_LINE:$COMP_POINT}"
 	local partials
-	IFS=" " read -r -a partials <<<"${COMP_LINE:0:$COMP_POINT}"
+	IFS=" " read -r -a partials <<<"$before_point"
 	local partial="${partials[$COMP_CWORD]}"
-	local -i last_index=${#COMP_WORDS[@]}-1
 	local is_last_word=0
-	# COMP_CWORD index is pointing to the last word (last_index == COMP_CWORD index)
-	# AND COMP_LINE does not end with a space (that would mean that this last word is actually not the last)
-	if [[ $last_index -eq $COMP_CWORD && "${COMP_LINE:(-1):1}" != " " ]]; then
+	if [[ $after_point == "" ]]; then
 		is_last_word=1
 	fi
 
@@ -486,6 +485,8 @@ __rh_complete() {
 			echo "  COMP_LINE = '$COMP_LINE'"
 			echo "  COMP_CWORD = $COMP_CWORD"
 			echo "  COMP_POINT = $COMP_POINT"
+			echo "  before_point = '$before_point'"
+			echo "  after_point = '$after_point'"
 			echo "  is_last_word = $is_last_word"
 			echo -n "  partials (${#partials[@]}) = "
 			for i in "${partials[@]}"; do

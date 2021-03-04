@@ -8,5 +8,5 @@ fi
 
 export RH_DEBUG="$PWD/debug.local.fifo"
 export RH_PROJECTS_DIRS="$PWD/temp/a:$PWD/temp/b"
-export RH_ROS_1_INSTALL_DIR="$PWD/temp/opt/ros"
+export RH_ROS_INSTALL_DIRS="$PWD/temp/home/another/ros:$PWD/temp/opt/ros"
 source rh.sh

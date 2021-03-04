@@ -6,27 +6,63 @@
 #
 #   add the following to your ~/.bashrc
 #
-#   note: there can be multiple projects dirs specified in RH_PROJECTS_DIRS
+#   note: there can be multiple dirs *_DIRS variables
 #         individual dirs are separated by ":"
 #         the left-most specified directory has the highest priority
 #
 #   export RH_PROJECTS_DIRS="/some/dir1:/another/dir2:/some/completely/different/dir3"
-#   export RH_ROS_1_INSTALL_DIR="/opt/ros"
-#   source ../rh.sh
+#   export RH_ROS_INSTALL_DIRS="/opt/ros"
+#   source path/to/rh.sh
 
 export RH_VERSION="0.0.1"
 
 # ROADMAP:
-# * support ROS 2 (versions switching and workspace root detection)
+# * support ROS 2 (workspace root detection)
 
-__rh_get_ros1_versions() {
+__rh_get_ros_versions() {
 
-	if [[ -z $RH_ROS_1_INSTALL_DIR ]]; then
+	local install_dirs
+	# see https://github.com/koalaman/shellcheck/wiki/SC2206
+	IFS=":" read -r -a install_dirs <<<"$RH_ROS_INSTALL_DIRS"
+
+	# no install dirs to search in
+	if [[ ${#install_dirs[@]} == 0 ]]; then
 		return 1
 	fi
 
-	find "$RH_ROS_1_INSTALL_DIR" -mindepth 1 -maxdepth 1 -type d -print0 | xargs -0 basename -a
+	find "${install_dirs[@]}" -mindepth 1 -maxdepth 1 -type d -print0 | xargs -0 basename -a | sort | uniq
 	return 0
+
+}
+
+__rh_get_ros_version_dir() {
+
+	local version_name="$1"
+
+	# no version name given
+	if [[ -z $version_name ]]; then
+		return 1
+	fi
+
+	local install_dirs
+	# see https://github.com/koalaman/shellcheck/wiki/SC2206
+	IFS=":" read -r -a install_dirs <<<"$RH_ROS_INSTALL_DIRS"
+
+	# no install dirs to search in
+	if [[ ${#install_dirs[@]} == 0 ]]; then
+		return 1
+	fi
+
+	# search in order (the left most dir is examined at first)
+	for i_dir in "${install_dirs[@]}"; do
+		# this install dir ($i_dir) contains subdirectory named $version_name
+		if [[ -d "$i_dir/$version_name" ]]; then
+			echo "$i_dir/$version_name"
+			return 0
+		fi
+	done
+
+	return 1
 
 }
 
@@ -104,8 +140,8 @@ rh() {
 	# ASCII color sequences
 	# credits: https://stackoverflow.com/questions/5947742/how-to-change-the-output-color-of-echo-in-linux
 	# see also: https://unix.stackexchange.com/questions/269077/tput-setaf-color-table-how-to-determine-color-codes
-	red=$(tput setaf 1)
-	rst=$(tput sgr0)
+	__rh_red=$(tput setaf 1)
+	__rh_rst=$(tput sgr0)
 
 	__rh_print_help() {
 		echo "A simple helper to make working with different ROS versions and projects easier."
@@ -124,12 +160,12 @@ rh() {
 
 	__rh_versions() {
 
-		if [[ -z $RH_ROS_1_INSTALL_DIR ]]; then
-			echo "${red}RH_ROS_1_INSTALL_DIR env variable not set or is empty${rst}"
+		if [[ -z $RH_ROS_INSTALL_DIRS ]]; then
+			echo "${__rh_red}RH_ROS_INSTALL_DIRS env variable not set or is empty${__rh_rst}"
 			return 1
 		fi
 
-		__rh_get_ros1_versions
+		__rh_get_ros_versions
 
 		return 0
 
@@ -147,25 +183,38 @@ rh() {
 		# no desired version given
 		if [[ -z $desired_version ]]; then
 			if [[ $silent != 1 ]]; then
-				echo "${red}no version given${rst}"
+				echo "${__rh_red}no version given${__rh_rst}"
 				echo "usage: rh sw <ros version name>"
 			fi
 			return 1
 		fi
 
-		# try ROS 1 distro
-		if [[ -r "$RH_ROS_1_INSTALL_DIR/$desired_version/setup.bash" ]]; then
-			[[ $silent != 1 ]] && echo "sourcing $RH_ROS_1_INSTALL_DIR/$desired_version/setup.bash"
+		local version_dir
+		version_dir=$(__rh_get_ros_version_dir "$desired_version")
+
+		if [[ -n $version_dir && -r "$version_dir/setup.bash" ]]; then
+			[[ $silent != 1 ]] && echo "sourcing $version_dir/setup.bash"
 			# shellcheck disable=SC1090
-			source "$RH_ROS_1_INSTALL_DIR/$desired_version/setup.bash"
+			source "$version_dir/setup.bash"
 			return 0
 		fi
 
 		if [[ $silent != 1 ]]; then
-			echo "${red}version '$desired_version' could not be activated"
-			echo "available versions:"
-			__rh_get_ros1_versions
+
+			echo "${__rh_red}version with name '$desired_version' was not found in any of the following install dirs:${__rh_rst}"
+
+			local -i i
+			local install_dirs
+			# see https://github.com/koalaman/shellcheck/wiki/SC2206
+			IFS=":" read -r -a install_dirs <<<"$RH_ROS_INSTALL_DIRS"
+			for i_dir in "${install_dirs[@]}"; do
+				# ((i++)) # Bash 5+
+				i+=1
+				echo "  $i. $i_dir"
+			done
+
 		fi
+
 		return 1
 
 	}
@@ -173,7 +222,7 @@ rh() {
 	__rh_projects() {
 
 		if [[ -z $RH_PROJECTS_DIRS ]]; then
-			echo "${red}RH_PROJECTS_DIRS env variable not set or is empty${rst}"
+			echo "${__rh_red}RH_PROJECTS_DIRS env variable not set or is empty${__rh_rst}"
 			return 1
 		fi
 
@@ -186,7 +235,7 @@ rh() {
 	__rh_cd() {
 
 		if [[ -z $RH_PROJECTS_DIRS ]]; then
-			echo "${red}RH_PROJECTS_DIRS env variable not set or is empty${rst}"
+			echo "${__rh_red}RH_PROJECTS_DIRS env variable not set or is empty${__rh_rst}"
 			return 1
 		fi
 
@@ -194,7 +243,7 @@ rh() {
 
 		# no project name given
 		if [[ -z $project_name ]]; then
-			echo "${red}no project name given${rst}"
+			echo "${__rh_red}no project name given${__rh_rst}"
 			echo "usage: rh cd <project name>"
 			return 1
 		fi
@@ -210,7 +259,7 @@ rh() {
 			return 0
 		fi
 
-		echo "${red}project with name '$project_name' was not found in any of the following project dirs:${rst}"
+		echo "${__rh_red}project with name '$project_name' was not found in any of the following project dirs:${__rh_rst}"
 
 		local -i i
 		local projects_dirs
@@ -268,8 +317,8 @@ rh() {
 
 	__rh_cleanup() {
 
-		unset red
-		unset rst
+		unset __rh_red
+		unset __rh_rst
 
 		unset __rh_print_help
 		unset __rh_env
@@ -312,7 +361,7 @@ rh() {
 		return $exit_code
 	fi
 
-	echo "${red}Unknown subcommand '${1}'${rst}"
+	echo "${__rh_red}Unknown subcommand '${1}'${__rh_rst}"
 	__rh_print_help
 	__rh_cleanup
 	return 1

@@ -478,6 +478,13 @@ __rh_complete() {
 		return
 	fi
 
+	# rh sw arguments
+	if [[ $sub_cmd == "sw" && $COMP_CWORD == 2 ]]; then
+		__rh_filter_reply "$(__rh_get_ros_versions)" "$partial" "${COMP_WORDS[2]}" $is_last_word
+		__rh_unset_local_fn
+		return
+	fi
+
 	# no autocomplete hint
 	__rh_debug_reply
 

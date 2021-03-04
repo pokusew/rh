@@ -1,20 +1,29 @@
 #!/usr/bin/env bash
 
+# rh - ROS Helper
+# A simple helper to make working with different ROS versions and projects easier.
+# HOMEPAGE: https://github.com/pokusew/rh
+
 # NOTE: Do NOT run this file directly (It is even not executable!)!
 
 # INSTALLATION:
 #
-#   add the following to your ~/.bashrc
+#   Requirements: Bash 4+
 #
-#   note: there can be multiple dirs *_DIRS variables
-#         individual dirs are separated by ":"
-#         the left-most specified directory has the highest priority
+#   1. Download the current version of rh.sh
+#      from https://raw.githubusercontent.com/pokusew/rh/master/rh.sh
 #
-#   export RH_PROJECTS_DIRS="/some/dir1:/another/dir2:/some/completely/different/dir3"
-#   export RH_ROS_INSTALL_DIRS="/opt/ros"
-#   source path/to/rh.sh
+#   2. Add something like the following to your `~/.bashrc` (supply your own values):
+#      export RH_PROJECTS_DIRS="/some/dir1:/another/dir2:/some/completely/different/dir3"
+#      export RH_ROS_INSTALL_DIRS="/opt/ros"
+#      source path/to/rh.sh
+#
+#      Note: There can be multiple dirs specified in *_DIRS variables.
+#            Individual dirs are separated by `:`,
+#            the left-most specified directory has the highest priority
+#
 
-export RH_VERSION="0.0.2"
+export RH_VERSION="0.0.3"
 
 # ROADMAP:
 # * support ROS 2 in rh cd, rh wcd rh dev (workspace root detection)
@@ -151,6 +160,7 @@ rh() {
 	__rh_print_help() {
 		echo "${__rh_bold}${__rh_cyan}rh - ROS helper${__rh_rst}"
 		echo "A simple helper to make working with different ROS versions and projects easier."
+		echo "${__rh_gray}Homepage: ${__rh_rst}https://github.com/pokusew/rh"
 		echo "${__rh_gray}Version: ${__rh_rst}$RH_VERSION"
 		echo "${__rh_gray}Usage: ${__rh_bold}${__rh_cyan}rh ${__rh_green}<command> ${__rh_yellow}[command options]${__rh_rst}"
 		echo "${__rh_gray}Commands:${__rh_rst}"

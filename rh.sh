@@ -188,7 +188,8 @@ rh() {
 	}
 
 	__rh_env() {
-		env | grep --color=always -e RH -e ROS -e CMAKE -e PYTHON | sort
+		# print env variables related to rh, ROS 1, ROS 2
+		env | grep --ignore-case --color=always -e RH -e ROS -e CMAKE -e PYTHON -e COLCON -e AMENT | sort
 		return 0
 	}
 

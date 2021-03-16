@@ -22,6 +22,8 @@ source rh.sh
 #   and the line containing delimiter
 #   <<-"EOF" no expansion and all leading tab characters are stripped
 
+assert-prepare "$PWD/test"
+
 assert "rh env"
 assert "rh versions"
 assert "rh sw foxtrot" 1
@@ -39,5 +41,11 @@ assert "__rh_get_workspaces temp" 0
 
 assert "rh projects"
 assert "rh cd 5"
+assert "rh dev"
+assert "rh ldev" 1
+assert "rh cd 4"
+assert "rh ldev"
 
 print-success "ALL TESTS PASSED"
+
+assert-cleanup

@@ -16,9 +16,27 @@ gray=$(tput setaf 8)
 bold=$(tput bold)
 rst=$(tput sgr0)
 
+assert-prepare() {
+	__assert_test_id=0
+	__assert_temp_dir=${1:-/tmp/assert-results}
+	mkdir -p "$__assert_temp_dir"
+	echo "${gray}--- assert temp dir is set to: ${cyan}$__assert_temp_dir${rst}"
+}
+
+# USAGE: assert command-to-run [expected-exit-code=0] [-- expected-output]
+# note: expected-output can e also set via global variable ASSERT_OUTPUT
+#       if ASSERT_OUTPUT it automatically cleared (unset) before returning from assert
+#       also expected-output via argument takes precedence over ASSERT_OUTPUT (which is still unset anyway)
+# note: command-to-run is NOT run within subshell
+#       so it affects the current working directory and global variables symbols, shell options, ...
 assert() {
 
-	# usage: command-to-run [expected-exit-code=0] [-- expected-output]
+	local -i test_id="$__assert_test_id"
+	test_id+=1
+	__assert_test_id="$test_id"
+	local test_id_str
+	printf -v test_id_str "%02d" "$test_id"
+	local temp_file="$__assert_temp_dir/test-$test_id_str.log"
 
 	local test_cmd="$1"
 	local expected_exit_code="${2:-0}"
@@ -34,17 +52,28 @@ assert() {
 	local test_exit_code
 	local test_output_matches=1
 
-	echo "${gray}--- assert ${bold}${cyan}${test_cmd}${rst}"
+	echo "${gray}--- assert ${bold}${test_id_str} ${cyan}${test_cmd}${rst}"
 
 	# invoke test command and capture its output and exit code
-	# see https://unix.stackexchange.com/questions/526904/bash-redirect-command-output-to-stdout-and-variable
-	# see https://stackoverflow.com/questions/6871859/piping-command-output-to-tee-but-also-save-exit-code-of-command
-	set -o pipefail
-	set +e
-	test_output="$($test_cmd | tee /dev/tty)"
+	# note: we do not want to run the command in subshell (TODO: make it configurable)
+
+	# preserve errexit option state
+	if [[ -o errexit ]]; then
+		set +e # temporarily disable errexit option
+		local enable_errexit=1
+	fi
+
+	$test_cmd >"$temp_file" 2>&1
 	test_exit_code=$?
-	set -e
-	set +o pipefail
+	test_output=$(cat "$temp_file")
+	if [[ $ASSERT_SILENT != "1" ]]; then
+		echo "$test_output"
+	fi
+
+	# restore errexit option state if needed
+	if [[ $enable_errexit -eq 1 ]]; then
+		set -e
+	fi
 
 	# -v = true if the shell variable is set (has been assigned a value)
 	# see https://www.gnu.org/software/bash/manual/html_node/Bash-Conditional-Expressions.html
@@ -73,6 +102,14 @@ assert() {
 
 	return 1
 
+}
+
+assert-cleanup() {
+	if [[ -d $__assert_temp_dir ]]; then
+		rm -r "$__assert_temp_dir"
+	fi
+	unset __assert_test_id
+	unset __assert_temp_dir
 }
 
 print-success() {

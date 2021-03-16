@@ -32,7 +32,8 @@ captures
 
 ### PROJECT
 
-# playground
+# test temp data
 /temp/
+/test/
 
 *.local.*

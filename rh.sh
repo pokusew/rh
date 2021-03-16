@@ -75,10 +75,12 @@ __rh_get_ros_version_dir() {
 
 }
 
-# return path to catkin workspaces (relative to the current directory) (separated by \n)
+# return path to all workspaces (catkin/colcon/any) (relative to the current directory) (separated by \n)
+# workspaces are directories that contains any of the following files in their root:
+#   .catkin_workspace / .colcon_workspace / .workspace
 # first argument specifies the search root (relative to the current directory)
 # if no argument is given, the current directory is used as the search root
-__rh_get_catkin_workspaces() {
+__rh_get_workspaces() {
 
 	local search_root="."
 
@@ -86,7 +88,9 @@ __rh_get_catkin_workspaces() {
 		search_root="$1"
 	fi
 
-	find "$search_root" -name .catkin_workspace -type f -print0 | xargs -0 dirname | sort
+	find "$search_root" \( -name .catkin_workspace -o -name .colcon_workspace -o -name .workspace \) -type f \
+		-print0 | xargs -0 -n 1 dirname | sort | uniq
+
 	return 0
 
 }
@@ -183,7 +187,7 @@ rh() {
 		echo "  ${__rh_bold}${__rh_cyan}rh ${__rh_green}dev${__rh_rst}"
 		echo "    tries to source devel/setup.bash (relative to the current working dir)"
 		echo "  ${__rh_bold}${__rh_cyan}rh ${__rh_green}wcd${__rh_rst}"
-		echo "    recursively searches for catkin workspaces and changes to first found"
+		echo "    recursively searches for workspaces and changes to the first found"
 		echo "    and sources its devel/setup.bash"
 	}
 
@@ -313,7 +317,7 @@ rh() {
 	__rh_wcd() {
 
 		local workspaces
-		IFS=$'\n' read -r -a workspaces <<<"$(__rh_get_catkin_workspaces .)"
+		IFS=$'\n' read -r -a workspaces <<<"$(__rh_get_workspaces .)"
 
 		if [[ ${#workspaces[@]} -gt 0 ]]; then
 			echo "changing into workspace ${workspaces[0]}"

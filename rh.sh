@@ -26,7 +26,7 @@
 export RH_VERSION="0.0.4"
 
 # ROADMAP:
-# * support ROS 2 in rh cd, rh wcd rh dev (workspace root detection)
+# * continually improve as I discover more needs while using ROS 1/2
 
 __rh_get_ros_versions() {
 
@@ -185,10 +185,16 @@ rh() {
 		echo "    changes into workspace of the given project"
 		echo "    projects are searched in dirs specified in RH_PROJECTS_DIRS"
 		echo "  ${__rh_bold}${__rh_cyan}rh ${__rh_green}dev${__rh_rst}"
-		echo "    tries to source devel/setup.bash (relative to the current working dir)"
+		echo "    tries to source install/setup.bash or devel/setup.bash (relative to the current working dir)"
+		echo "  ${__rh_bold}${__rh_cyan}rh ${__rh_green}ldev${__rh_rst}"
+		echo "    tries to source install/local_setup.bash or devel/local_setup.bash (relative to the current working dir)"
 		echo "  ${__rh_bold}${__rh_cyan}rh ${__rh_green}wcd${__rh_rst}"
 		echo "    recursively searches for workspaces and changes to the first found"
-		echo "    and sources its devel/setup.bash"
+		echo "    and then runs ${__rh_bold}${__rh_cyan}rh ${__rh_green}dev${__rh_rst}"
+		echo "  ${__rh_bold}${__rh_cyan}rh ${__rh_green}rosdep-check-src${__rh_rst}"
+		echo "    runs 'rosdep check -i --from-path src' in the current working dir"
+		echo "  ${__rh_bold}${__rh_cyan}rh ${__rh_green}rosdep-install-src${__rh_rst}"
+		echo "    runs 'rosdep install -i --from-path src' in the current working dir"
 	}
 
 	__rh_env() {
@@ -294,7 +300,7 @@ rh() {
 			echo "changing into '$project_dir' directory"
 			# shellcheck disable=SC2164
 			cd "$project_dir"
-			__rh_wcd
+			__rh_wcd "$@"
 			return 0
 		fi
 
@@ -323,13 +329,7 @@ rh() {
 			echo "changing into workspace ${workspaces[0]}"
 			# shellcheck disable=SC2164
 			cd "${workspaces[0]}"
-			# for ROS 1 with catkin: try to source devel setup.bash
-			if [[ -r .catkin_workspace && -r devel/setup.bash ]]; then
-				echo "sourcing devel/setup.bash"
-				source devel/setup.bash
-				echo "current ROS related env variables:"
-				__rh_env
-			fi
+			__rh_dev "$@"
 			return 0
 		fi
 
@@ -340,16 +340,31 @@ rh() {
 
 	__rh_dev() {
 
-		# for ROS 1 with catkin: try to source devel setup.bash
-		if [[ -r .catkin_workspace && -r devel/setup.bash ]]; then
-			echo "sourcing devel/setup.bash"
-			echo "current ROS related env variables:"
-			__rh_env
-			return 0
+		if [[ $1 == "ldev" || $2 == "--local" ]]; then
+			local setup_files_to_try=(
+				'install/local_setup.bash' # ROS 2: default colcon
+				'devel/local_setup.bash' # ROS 1: default catkin
+			)
+		else
+			local setup_files_to_try=(
+				'install/setup.bash' # ROS 2: default colcon
+				'devel/setup.bash' # ROS 1: default catkin
+			)
 		fi
 
-		echo "current directory does not appear to be a ROS 1 catkin workspace"
-		echo ".catkin_workspace and/or -r devel/setup.bash do not exists / are not readable"
+		for setup_file in "${setup_files_to_try[@]}"; do
+			if [[ -r "$setup_file" ]]; then
+				echo "sourcing $setup_file"
+				# shellcheck disable=SC1090
+				source "$setup_file"
+				echo "current ROS related env variables:"
+				__rh_env
+				return 0
+			fi
+		done
+
+		echo "current directory does not contain any of the files (or they may not be readable):"
+		echo "  ${setup_file[*]}"
 		return 1
 
 	}
@@ -388,6 +403,7 @@ rh() {
 		["cd"]=__rh_cd
 		["wcd"]=__rh_wcd
 		["dev"]=__rh_dev
+		["ldev"]=__rh_dev
 	)
 	readonly sub_cmd_map
 
@@ -509,7 +525,7 @@ __rh_complete() {
 
 	# rh subcommands
 	if [[ $COMP_CWORD == 1 ]]; then
-		__rh_filter_reply "help env versions sw projects cd dev wcd" "$partial" "${COMP_WORDS[1]}" $is_last_word
+		__rh_filter_reply "help env versions sw projects cd dev ldev wcd" "$partial" "${COMP_WORDS[1]}" $is_last_word
 		__rh_unset_local_fn
 		return
 	fi

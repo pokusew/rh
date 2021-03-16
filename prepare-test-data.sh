@@ -8,6 +8,8 @@ cd temp
 
 mkdir -p a/1 a/2 a/3 b/1 b/4 b/5 b/5/ws b/5/ws/devel opt/ros/kinetic home/another/ros/foxy
 touch b/5/ws/.catkin_workspace
+touch b/4/.workspace
+touch a/1/.colcon_workspace
 
 cat >b/5/ws/devel/setup.bash <<END
 #!/usr/bin/env bash

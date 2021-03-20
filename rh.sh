@@ -374,6 +374,18 @@ rh() {
 
 	}
 
+	__rh_rosdep_check_src() {
+		# note: src is prefixed by $PWD and printed just for clarity
+		echo "running ${__rh_bold}${__rh_cyan}rosdep check -i --from-path $PWD/src${__rh_rst}"
+		rosdep check -i --from-path "$PWD/src"
+	}
+
+	__rh_rosdep_install_src() {
+		# note: src is prefixed by $PWD and printed just for clarity
+		echo "running ${__rh_bold}${__rh_cyan}rosdep install -i --from-path $PWD/src${__rh_rst}"
+		rosdep install -i --from-path "$PWD/src"
+	}
+
 	__rh_cleanup() {
 
 		unset __rh_red
@@ -392,6 +404,8 @@ rh() {
 		unset __rh_cd
 		unset __rh_wcd
 		unset __rh_dev
+		unset __rh_rosdep_check_src
+		unset __rh_rosdep_install_src
 
 		unset __rh_cleanup
 
@@ -409,6 +423,8 @@ rh() {
 		["wcd"]=__rh_wcd
 		["dev"]=__rh_dev
 		["ldev"]=__rh_dev
+		["rosdep-check-src"]=__rh_rosdep_check_src
+		["rosdep-install-src"]=__rh_rosdep_install_src
 	)
 	readonly sub_cmd_map
 
@@ -530,7 +546,12 @@ __rh_complete() {
 
 	# rh subcommands
 	if [[ $COMP_CWORD == 1 ]]; then
-		__rh_filter_reply "help env versions sw projects cd dev ldev wcd" "$partial" "${COMP_WORDS[1]}" $is_last_word
+		# TODO: get subcommand names from sub_cmd_map (currently it is a local variable in rh function)
+		__rh_filter_reply \
+			"help env versions sw projects cd dev ldev wcd rosdep-check-src rosdep-install-src" \
+			"$partial" \
+			"${COMP_WORDS[1]}" \
+			$is_last_word
 		__rh_unset_local_fn
 		return
 	fi

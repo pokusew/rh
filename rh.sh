@@ -366,7 +366,10 @@ rh() {
 		done
 
 		echo "current directory does not contain any of the files (or they may not be readable):"
-		echo "  ${setup_file[*]}"
+		for setup_file in "${setup_files_to_try[@]}"; do
+			echo "  $setup_file"
+		done
+
 		return 1
 
 	}

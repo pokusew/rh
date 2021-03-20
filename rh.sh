@@ -23,7 +23,7 @@
 #            the left-most specified directory has the highest priority
 #
 
-export RH_VERSION="0.0.4"
+export RH_VERSION="0.0.5"
 
 # ROADMAP:
 # * continually improve as I discover more needs while using ROS 1/2

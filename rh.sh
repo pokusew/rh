@@ -162,6 +162,8 @@ rh() {
 	__rh_rst=$(tput sgr0)
 
 	__rh_print_help() {
+		# note: here we could use heredoc (multiline string) instead of of multiple echo(s)
+		#       but echo(s) work better with syntax highlighting (at least in JetBrain's IDEs)
 		echo "${__rh_bold}${__rh_cyan}rh - ROS helper${__rh_rst}"
 		echo "A simple helper to make working with different ROS versions and projects easier."
 		echo "${__rh_gray}Homepage: ${__rh_rst}https://github.com/pokusew/rh"

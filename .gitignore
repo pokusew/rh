@@ -36,4 +36,8 @@ captures
 /temp/
 /test/
 
+# GitHub Actions CI workflow outputs
+/outputs/
+
+# local only files
 *.local.*

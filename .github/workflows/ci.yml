@@ -1,0 +1,71 @@
+#
+# GitHub Actions Workflow
+#   reference: https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions
+#
+
+name: CI
+
+on:
+  # see also https://github.community/t/how-to-trigger-an-action-on-push-or-pull-request-but-not-both/16662
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+
+env:
+  TERM: xterm-256color
+
+jobs:
+
+  test:
+
+    name: Run tests
+
+    strategy:
+      fail-fast: false
+      matrix:
+        # see https://github.com/actions/virtual-environments/tree/main
+        os: [
+            ubuntu-20.04,
+            ubuntu-18.04,
+            ubuntu-16.04,
+            macos-latest,
+        ]
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+
+      # https://github.com/actions/checkout
+      - uses: actions/checkout@v2
+
+      # macOS bundles only Bash 3 but rh requires Bash 4+
+      # so on macOS we use brew to install an up-to-date version of Bash
+      - name: Install Bash 5
+        if: ${{ matrix.os == 'macos-latest' }}
+        run: brew install bash
+
+      - name: Print Bash version
+        run: echo $BASH_VERSION
+        shell: bash
+
+      - name: Install Bash 5
+        if: ${{ matrix.os == 'macos-latest' }}
+        run: brew install bash
+
+      - name: Run tests
+        # https://askubuntu.com/a/731237
+        run: |
+          mkdir -p outputs
+          ./test.sh |& tee outputs/test-output.txt
+        shell: bash
+
+      - name: Store test results
+        if: ${{ success() || failure() }}
+        # https://github.com/actions/upload-artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: test-results-${{ matrix.os }}
+          path: outputs/test-output.txt

@@ -28,6 +28,13 @@ export RH_VERSION="0.0.4"
 # ROADMAP:
 # * continually improve as I discover more needs while using ROS 1/2
 
+# NOTE 1: problem - xargs runs command even when stdin is empty
+#   tail -n +2 could be workaround for missing option --no-run-if-empty in BSD's xargs (it is GNU only extension)
+#   BUT is seems that BSD's xargs does NOT run command when stdin is empty
+#   SO we use --no-run-if-empty only on Linux
+#   see https://stackoverflow.com/questions/8296710/how-to-ignore-xargs-commands-if-stdin-input-is-empty
+#   see https://stackoverflow.com/questions/339483/how-can-i-remove-the-first-line-of-a-text-file-using-bash-sed-script
+
 __rh_get_ros_versions() {
 
 	local install_dirs
@@ -39,7 +46,18 @@ __rh_get_ros_versions() {
 		return 1
 	fi
 
-	find "${install_dirs[@]}" -mindepth 1 -maxdepth 1 -type d -print0 | xargs -0 basename -a | sort | uniq
+	# TODO: some of the install dirs do not exist (currently find prints warning)
+
+	local xargs_additional_options=()
+	# see "NOTE 1" at the top of the file
+	if [[ $(uname) == "Linux" ]]; then
+		# let's hope this is GNU/Linux which supports xargs --no-run-if-empty
+		xargs_additional_options+=("--no-run-if-empty")
+	fi
+
+	find "${install_dirs[@]}" -mindepth 1 -maxdepth 1 -type d \
+		-print0 | xargs "${xargs_additional_options[@]}" -0 basename -a | sort | uniq
+
 	return 0
 
 }
@@ -88,8 +106,17 @@ __rh_get_workspaces() {
 		search_root="$1"
 	fi
 
+	# TODO: search_root dir does not exist (currently find prints warning)
+
+	local xargs_additional_options=()
+	# see "NOTE 1" at the top of the file
+	if [[ $(uname) == "Linux" ]]; then
+		# let's hope this is GNU/Linux which supports xargs --no-run-if-empty
+		xargs_additional_options+=("--no-run-if-empty")
+	fi
+
 	find "$search_root" \( -name .catkin_workspace -o -name .colcon_workspace -o -name .workspace \) -type f \
-		-print0 | xargs -0 -n 1 dirname | sort | uniq
+		-print0 | xargs "${xargs_additional_options[@]}" -0 -n 1 dirname | sort | uniq
 
 	return 0
 
@@ -108,7 +135,18 @@ __rh_get_project_names() {
 		return 1
 	fi
 
-	find "${projects_dirs[@]}" -mindepth 1 -maxdepth 1 -type d -print0 | xargs -0 basename -a | sort | uniq
+	# TODO: some of the projects dirs do not exist (currently find prints warning)
+
+	local xargs_additional_options=()
+	# see "NOTE 1" at the top of the file
+	if [[ $(uname) == "Linux" ]]; then
+		# let's hope this is GNU/Linux which supports xargs --no-run-if-empty
+		xargs_additional_options+=("--no-run-if-empty")
+	fi
+
+	find "${projects_dirs[@]}" -mindepth 1 -maxdepth 1 -type d \
+		-print0 | xargs "${xargs_additional_options[@]}" -0 basename -a | sort | uniq
+
 	return 0
 
 }

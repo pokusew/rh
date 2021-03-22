@@ -15,3 +15,8 @@ indent_size = 2
 
 [*.md]
 trim_trailing_whitespace = false
+
+# JetBrain's IDEs does NOT use empty final newline
+# for its metadata files in .idea dir
+[**/.idea/**/*]
+insert_final_newline = false

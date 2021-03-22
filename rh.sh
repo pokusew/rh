@@ -222,15 +222,14 @@ rh() {
 		echo "    lists all available projects"
 		echo "    projects are searched in dirs specified in RH_PROJECTS_DIRS"
 		echo "  ${__rh_bold}${__rh_cyan}rh ${__rh_green}cd ${__rh_yellow}<project name>${__rh_rst}"
-		echo "    changes into workspace of the given project"
+		echo "    changes into workspace dir of the given project"
 		echo "    projects are searched in dirs specified in RH_PROJECTS_DIRS"
 		echo "  ${__rh_bold}${__rh_cyan}rh ${__rh_green}dev${__rh_rst}"
 		echo "    tries to source install/setup.bash or devel/setup.bash (relative to the current working dir)"
 		echo "  ${__rh_bold}${__rh_cyan}rh ${__rh_green}ldev${__rh_rst}"
 		echo "    tries to source install/local_setup.bash or devel/local_setup.bash (relative to the current working dir)"
 		echo "  ${__rh_bold}${__rh_cyan}rh ${__rh_green}wcd${__rh_rst}"
-		echo "    recursively searches for workspaces and changes to the first found"
-		echo "    and then runs ${__rh_bold}${__rh_cyan}rh ${__rh_green}dev${__rh_rst}"
+		echo "    recursively searches for workspaces dirs and changes to the first found"
 		echo "  ${__rh_bold}${__rh_cyan}rh ${__rh_green}rosdep-check-src${__rh_rst}"
 		echo "    runs 'rosdep check -i --from-path src' in the current working dir"
 		echo "  ${__rh_bold}${__rh_cyan}rh ${__rh_green}rosdep-install-src${__rh_rst}"
@@ -369,7 +368,6 @@ rh() {
 			echo "changing into workspace ${workspaces[0]}"
 			# shellcheck disable=SC2164
 			cd "${workspaces[0]}"
-			__rh_dev "$@"
 			return 0
 		fi
 

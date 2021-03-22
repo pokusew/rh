@@ -33,7 +33,8 @@ Upon successful installation, type `rh help`:
 $ rh help
 rh - ROS helper
 A simple helper to make working with different ROS versions and projects easier.
-Version: 0.0.3
+Homepage: https://github.com/pokusew/rh
+Version: 0.0.7
 Usage: rh <command> [command options]
 Commands:
   rh help
@@ -50,11 +51,16 @@ Commands:
     lists all available projects
     projects are searched in dirs specified in RH_PROJECTS_DIRS
   rh cd <project name>
-    changes into workspace of the given project
+    changes into project dir of the given project
     projects are searched in dirs specified in RH_PROJECTS_DIRS
   rh dev
-    tries to source devel/setup.bash (relative to the current working dir)
+    tries to source install/setup.bash or devel/setup.bash (relative to the current working dir)
+  rh ldev
+    tries to source install/local_setup.bash or devel/local_setup.bash (relative to the current working dir)
   rh wcd
-    recursively searches for catkin workspaces and changes to first found
-    and sources its devel/setup.bash
+    recursively searches for workspaces dirs and changes to the nearest found
+  rh rosdep-check-src
+    runs 'rosdep check -i --from-path src' in the current working dir
+  rh rosdep-install-src
+    runs 'rosdep install -i --from-path src' in the current working dir
 ```

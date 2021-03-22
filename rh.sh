@@ -16,7 +16,8 @@
 #   2. Add something like the following to your `~/.bashrc` (supply your own values):
 #      export RH_PROJECTS_DIRS="/some/dir1:/another/dir2:/some/completely/different/dir3"
 #      export RH_ROS_INSTALL_DIRS="/opt/ros"
-#      source path/to/rh.sh
+#      export RH_SRC="/absolute/path/to/rh.sh"
+#      source "$RH_SRC"
 #
 #      Note: There can be multiple dirs specified in *_DIRS variables.
 #            Individual dirs are separated by `:`,

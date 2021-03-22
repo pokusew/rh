@@ -43,6 +43,7 @@ assert "__rh_get_workspaces temp" 0
 
 assert "rh projects"
 assert "rh cd 5"
+assert "rh wcd"
 assert "rh dev"
 assert "rh ldev" 1
 assert "rh cd 4"

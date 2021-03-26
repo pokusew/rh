@@ -27,6 +27,8 @@
 export RH_VERSION="0.0.7"
 
 # ROADMAP:
+# * support .rh_project file (as in https://github.com/pokusew/ubuntu-ros/blob/master/vscode/ros-vsc-sync.sh)
+# * merge ros-vsc-sync.sh into rh
 # * continually improve as I discover more needs while using ROS 1/2
 
 # NOTE 1: problem - xargs runs command even when stdin is empty

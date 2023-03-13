@@ -1,6 +1,6 @@
 # rh - ROS Helper
 
-[![build status](https://img.shields.io/github/workflow/status/pokusew/rh/CI?logo=github)](https://github.com/pokusew/rh/actions?query=workflow%3ACI)
+[![build status](https://img.shields.io/github/actions/workflow/status/pokusew/rh/ci.yml?logo=github)](https://github.com/pokusew/rh/actions/workflows/ci.yml)
 
 A simple helper to make working with different ROS versions and projects easier.
 Powerful autocompletion included.
